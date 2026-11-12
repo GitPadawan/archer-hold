@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111e2b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Archer Hold">
+  <meta name="description" content="An archery-inspired two-dumbbell hold timer with saved session history.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Archer Hold · Training Timer</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0c1420; --panel:#152535; --panel2:#1b2c3d; --line:#34465a; --text:#f4f7fb; --muted:#b6c6d5; --gold:#f2c770; --mint:#81e5c5; --coral:#ffc08c; --r:20px; }
+    * {box-sizing:border-box}
+    body { margin:0; background:radial-gradient(circle at 50% -20%,#274357 0,#142536 45%,var(--bg) 95%); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:16px; min-height:100dvh; }
+    button,input {font:inherit}
+    button {cursor:pointer; touch-action:manipulation}
+    .app {width:min(100%,560px); margin:0 auto; padding:calc(20px + env(safe-area-inset-top)) 17px calc(28px + env(safe-area-inset-bottom));}
+    header {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 26px}
+    .brand {display:flex;align-items:center;gap:11px}
+    .logo {width:44px;height:44px;display:grid;place-items:center;border:1px solid #557185;background:linear-gradient(140deg,#274256,#162737);border-radius:14px;font-size:24px}
+    .brand h1 {font-size:20px;letter-spacing:.3px;margin:0}
+    .brand small {font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1.6px}
+    .eyebrow {font-size:12px;font-weight:750;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin:0 0 12px}
+    h2 {font-size:clamp(28px,7vw,36px);line-height:1.11;letter-spacing:-.8px;margin:0 0 13px}
+    h3 {font-size:17px;margin:0 0 10px}
+    p {color:var(--muted);line-height:1.48}
+    .lead {margin:0 0 24px}
+    .card {padding:20px;border-radius:var(--r);background:linear-gradient(155deg,#1c3142,#122435);border:1px solid var(--line);box-shadow:0 8px 32px #06111b45;margin-bottom:16px}
+    .form-grid {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field {background:#101e2c;border:1px solid #3b5063;border-radius:14px;padding:14px 12px}
+    .field label {display:block;font-size:13px;line-height:1.4;color:#d7e3ec;min-height:37px;font-weight:650;margin-bottom:9px}
+    .field label span {color:var(--gold);margin-right:5px}
+    .number-wrap {display:flex;align-items:baseline;gap:5px}
+    .field input {min-width:0;width:100%;color:#fff;font-size:28px;font-weight:750;appearance:textfield;background:transparent;border:0;outline-offset:3px;border-radius:4px;padding:0}
+    .field input::-webkit-inner-spin-button, .field input::-webkit-outer-spin-button { -webkit-appearance:none;margin:0 }
+    .field .unit {white-space:nowrap;color:var(--muted);font-size:12px}
+    .hint {margin:13px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+    .small-head {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .small-head h3 {margin:0}
+    .summary {display:flex;gap:0;justify-content:space-between;align-items:center;flex-wrap:wrap;border:1px solid #425b68;border-radius:13px;background:#112636;padding:14px 15px;margin:15px 0}
+    .summary b {display:block;color:#fff;font-size:20px}
+    .summary span {font-size:12px;color:var(--muted)}
+    .btn {border:0;border-radius:15px;min-height:51px;padding:12px 18px;font-weight:800;display:inline-flex;justify-content:center;align-items:center;gap:8px;transition:transform .13s,background .13s}
+    .btn:active {transform:scale(.98)}
+    .btn-primary {color:#16212d;background:var(--gold)}
+    .btn-primary:hover {background:#ffda8e}
+    .btn-secondary {background:#253d50;color:#f2f7fb;border:1px solid #4b6578}
+    .btn-danger {background:transparent;color:#ffd2cb;border:1px solid #94645f}
+    .btn-small {min-height:39px;font-size:13px;padding:8px 12px;border-radius:11px}
+    .btn-ghost {border:1px solid #486273;background:#1b3244;color:#f0f5fb;min-height:41px;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:700}
+    .full {width:100%}
+    .actions {display:flex;gap:10px;flex-wrap:wrap}
+    .actions > * {flex:1}
+    .top-link {font-size:13px;font-weight:750;color:var(--gold);border:1px solid #55697c;background:#213449;padding:10px 12px;border-radius:12px;min-width:82px}
+    .status {border-radius:100px;padding:8px 15px;background:#2d4456;color:var(--muted);font-size:13px;font-weight:800;display:inline-block;margin-bottom:14px;letter-spacing:1.4px}
+    .status.hold {background:#174b49;color:#adffe3}
+    .status.rest {background:#58422b;color:#ffe3a5}
+    .status.intro {background:#34435c;color:#dceaff}
+    .session-layout {text-align:center;padding:32px 18px}
+    .circle {width:min(71vw,300px);height:min(71vw,300px);max-width:300px;max-height:300px;min-width:235px;min-height:235px;margin:15px auto 22px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--mint) calc(var(--progress,0) * 1%),#3b5363 0);padding:9px;box-shadow:0 0 55px #70ffe21b}
+    .circle.rest {background:conic-gradient(var(--gold) calc(var(--progress,0) * 1%),#3b5363 0)}
+    .circle.intro {background:conic-gradient(#8bbfff calc(var(--progress,0) * 1%),#3b5363 0)}
+    .circle-inner {background:linear-gradient(145deg,#172d3b,#101e2b);border-radius:50%;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .big-time {font-size:clamp(75px,19vw,105px);font-weight:850;letter-spacing:-5px;line-height:1;font-variant-numeric:tabular-nums}
+    .time-label {margin-top:10px;font-weight:650;color:var(--muted);font-size:13px;letter-spacing:1px;text-transform:uppercase}
+    .phase-name {font-weight:800;font-size:24px;margin:4px 0}
+    .phase-help {font-size:14px;margin:8px 0 22px;min-height:42px}
+    .sets {display:flex;justify-content:center;gap:9px;align-items:center;flex-wrap:wrap;margin:18px 0 22px}
+    .dot {width:25px;height:9px;border-radius:20px;background:#385367}
+    .dot.done {background:var(--mint)}
+    .dot.current {background:var(--gold)}
+    .notice {background:#223746;border:1px solid #425968;border-radius:12px;padding:12px;font-size:13px;color:#dce9f0;line-height:1.5;margin:16px 0}
+    .history-list {display:grid;gap:11px;margin-top:16px}
+    .history-item {background:#102131;border:1px solid #39566b;border-radius:13px;padding:14px}
+    .history-top {display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .history-date {font-size:14px;font-weight:800}
+    .history-stats {font-size:13px;color:var(--muted);margin-top:7px;line-height:1.55}
+    .tag {font-size:11px;padding:5px 8px;border-radius:20px;white-space:nowrap;color:#cbdfea;background:#2b4353}
+    .tag.completed {background:#164c46;color:#b1ffe4}
+    .tag.stopped {background:#554332;color:#ffe5b5}
+    .muted {color:var(--muted)}
+    .empty {text-align:center;padding:30px 12px;color:var(--muted);font-size:14px}
+    .footer {font-size:12px;color:#aabdd0;text-align:center;line-height:1.5;padding-top:6px}
+    .hide {display:none!important}
+    .error {font-size:13px;color:#ffcfbd;margin:10px 0 0}
+    @media (max-width:360px) {.app{padding-left:12px;padding-right:12px}.card{padding:14px}.field{padding:12px 10px}.field input{font-size:25px}.big-time{font-size:72px}}
+    @media (prefers-reduced-motion:reduce){.btn{transition:none}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true">🎯</div><div><small>ARCHERY STRENGTH</small><h1>Archer Hold</h1></div></div>
+      <button class="top-link" id="historyToggle" type="button" aria-controls="historySection">History</button>
+    </header>
+
+    <section id="setupSection" aria-label="Set up training">
+      <p class="eyebrow">Steady aim · Strong form</p>
+      <h2>Build your hold.<br>Own your shot.</h2>
+      <p class="lead">Set your two-dumbbell archery stance drill. One arm extends forward; the other dumbbell stays close to your chin.</p>
+      <div class="card">
+        <div class="small-head"><h3>Your session</h3><span class="muted" style="font-size:12px">4 settings</span></div>
+        <form id="settingsForm" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="sets"><span>01</span> How many sets?</label><div class="number-wrap"><input id="sets" name="sets" inputmode="numeric" type="number" min="1" max="8" step="1" value="3" required><span class="unit">sets</span></div></div>
+            <div class="field"><label for="hold"><span>02</span> How long per set?</label><div class="number-wrap"><input id="hold" name="hold" inputmode="numeric" type="number" min="5" max="120" step="1" value="20" required><span class="unit">sec</span></div></div>
+            <div class="field"><label for="rest"><span>03</span> How long per rest?</label><div class="number-wrap"><input id="rest" name="rest" inputmode="numeric" type="number" min="5" max="120" step="1" value="20" required><span class="unit">sec</span></div></div>
+            <div class="field"><label for="weight"><span>04</span> What weight holding?</label><div class="number-wrap"><input id="weight" name="weight" inputmode="numeric" type="number" min="1" max="10" step="1" value="2" required><span class="unit">kg each</span></div></div>
+          </div>
+          <p class="hint">Weight is <strong>per dumbbell</strong>. The 10-second preparation countdown is automatic. Rest occurs between sets, not after the final set.</p>
+          <p class="error hide" id="validationMessage" role="alert"></p>
+          <div class="summary" aria-live="polite"><div><span>Session duration</span><b id="totalTime">2 min 10 sec</b></div><div><span>Total hold time</span><b id="totalHold">60 sec</b></div></div>
+          <div class="actions" style="margin-bottom:10px"><button type="button" class="btn btn-secondary btn-small" id="testSound">🔊 Test beeps</button></div>
+          <button class="btn btn-primary full" id="startButton" type="submit">▶ Start Archer Hold</button>
+        </form>
+      </div>
+      <p class="footer">Start light and stay controlled. A dumbbell held at arm's length is not equivalent to your bow's draw weight.</p>
+    </section>
+
+    <section id="timerSection" class="hide" aria-label="Active training timer" aria-live="off">
+      <div class="card session-layout">
+        <div class="status intro" id="phaseStatus">PREPARE</div>
+        <div class="phase-name" id="phaseName">Get into position</div>
+        <div class="circle intro" id="timerCircle" style="--progress:0"><div class="circle-inner"><div class="big-time" id="timerDigits" role="timer" aria-label="Seconds remaining">10</div><div class="time-label">seconds left</div></div></div>
+        <div class="phase-name" id="setCounter">Set 1 of 3</div>
+        <p class="phase-help" id="phaseHelp">Set your feet. Dumbbells ready. The first beep starts your hold.</p>
+        <div class="sets" id="setDots" aria-label="Set progress"></div>
+        <div class="actions"><button class="btn btn-secondary" id="pauseButton" type="button">Ⅱ Pause</button><button class="btn btn-danger" id="endButton" type="button">End early</button></div>
+        <p class="hint" style="margin-top:18px">Keep this screen open to hear the cues. The timer pauses if you switch apps or lock your phone.</p>
+      </div>
+    </section>
+
+    <section id="finishSection" class="hide" aria-label="Session summary">
+      <div class="card" style="text-align:center;padding:30px 20px">
+        <div style="font-size:44px" aria-hidden="true">🏹</div>
+        <p class="eyebrow" style="margin-top:10px" id="finishEyebrow">SESSION COMPLETE</p>
+        <h2 id="finishHeading">Nice steady work.</h2>
+        <p id="finishDescription">Your workout has been saved to your training history.</p>
+        <div class="summary"><div><span>Holds completed</span><b id="finishSets">3 of 3</b></div><div><span>Weight per hand</span><b id="finishWeight">2 kg</b></div></div>
+        <button class="btn btn-primary full" id="againButton" type="button">Start another session</button>
+        <button class="btn btn-secondary full" id="viewHistoryButton" type="button" style="margin-top:10px">View training history</button>
+      </div>
+    </section>
+
+    <section id="historySection" class="hide" aria-label="Training history">
+      <p class="eyebrow">Your training diary</p><h2>Archer Hold history</h2>
+      <p class="lead">Sessions are saved on this device. Export your diary regularly if you'd like to keep a separate document.</p>
+      <div class="card">
+        <div class="small-head"><h3>Recorded sessions</h3><span class="muted" id="historyCount">0 sessions</span></div>
+        <div class="actions"><button class="btn btn-secondary btn-small" id="exportTxt" type="button">Export diary (.txt)</button><button class="btn btn-secondary btn-small" id="exportCsv" type="button">Export CSV</button></div>
+        <div class="history-list" id="historyList"></div>
+        <button class="btn btn-danger btn-small" id="clearHistory" type="button" style="margin-top:18px">Clear all history</button>
+      </div>
+      <button class="btn btn-primary full" id="backButton" type="button">Back to Archer Hold</button>
+      <div class="notice" id="storageNotice">Your records stay in this browser/on this device; no account or upload is required. Deleting website data or removing the app can remove them, so export for a permanent copy.</div>
+    </section>
+  </main>
+  <script>
+  (() => {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const screens = ['setupSection','timerSection','finishSection','historySection'];
+    const keys = { history:'archer-hold:history:v1', settings:'archer-hold:settings:v1' };
+    let logs = [], audio = null, wakeLock = null, tickTimer = null, active = null, previousScreen='setupSection', storageAvailable=true;
+    const limits = {sets:[1,8],hold:[5,120],rest:[5,120],weight:[1,10]};
+
+    function getStored(key, fallback) { try {const value=localStorage.getItem(key); return value ? JSON.parse(value) : fallback;} catch (_) {storageAvailable=false; return fallback;} }
+    function putStored(key, data) { try {localStorage.setItem(key,JSON.stringify(data));} catch (_) {storageAvailable=false; $('storageNotice').textContent='This browser is not allowing local saved records. Export after training to keep a copy.';} }
+    function show(id) { screens.forEach(s => $(s).classList.toggle('hide',s!==id)); window.scrollTo({top:0,behavior:'instant'}); }
+    function readSettings() {const out={}; for (const id of Object.keys(limits)) {const n=Number($(id).value); if (!Number.isInteger(n)||n<limits[id][0]||n>limits[id][1]) throw new Error(`${id==='sets'?'Sets':id==='hold'?'Hold seconds':id==='rest'?'Rest seconds':'Weight'} must be a whole number from ${limits[id][0]} to ${limits[id][1]}.`);out[id]=n;} return out;}
+    const formatSecs = seconds => {const m=Math.floor(seconds/60),s=Math.round(seconds%60);return m?`${m} min ${s} sec`:`${s} sec`;};
+    function updatePreview(){try{const s=readSettings();$('validationMessage').classList.add('hide'); $('totalTime').textContent=formatSecs(10+s.sets*s.hold+(s.sets-1)*s.rest);$('totalHold').textContent=formatSecs(s.sets*s.hold);}catch (_){$('totalTime').textContent='—';$('totalHold').textContent='—';}}
+    function initAudio(){try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return; if(!audio) audio=new Context(); if(audio.state==='suspended')audio.resume().catch(()=>{});}catch (_){} }
+    function tone(frequency,duration,delay=0){if(!audio)return;try{const start=audio.currentTime+delay;const osc=audio.createOscillator(), gain=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.28,start+.018);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);osc.connect(gain);gain.connect(audio.destination);osc.start(start);osc.stop(start+duration+.03);}catch (_){} }
+    function sound(kind){if(kind==='hold'){tone(850,.26);tone(1050,.29,.36);}else if(kind==='rest'){tone(490,.44);}else if(kind==='done'){tone(660,.16);tone(830,.16,.21);tone(1100,.42,.44);}else{tone(750,.16);tone(980,.16,.25);}}
+    async function getWakeLock(){if(!('wakeLock' in navigator)||!navigator.wakeLock)return;try{wakeLock=await navigator.wakeLock.request('screen');}catch (_){} }
+    function releaseWakeLock(){if(wakeLock){wakeLock.release().catch(()=>{});wakeLock=null;}}
+    function storeLogs(){putStored(keys.history,logs);}
+    function phases(s){const result=[{type:'intro',secs:10,set:1}];for(let i=1;i<=s.sets;i++){result.push({type:'hold',secs:s.hold,set:i});if(i<s.sets) result.push({type:'rest',secs:s.rest,set:i});}return result;}
+    function newLog(s){const record={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,startedAt:new Date().toISOString(),finishedAt:null,plannedSets:s.sets,holdSeconds:s.hold,restSeconds:s.rest,weightKg:s.weight,completedSets:0,status:'In progress'};logs.unshift(record);storeLogs();return record;}
+    function startSession(event){if(event)event.preventDefault();let settings;try{settings=readSettings();$('validationMessage').classList.add('hide');}catch (e){$('validationMessage').textContent=e.message;$('validationMessage').classList.remove('hide');return;}
+      initAudio();putStored(keys.settings,settings);const record=newLog(settings);const seq=phases(settings);active={settings,record,seq,index:0,remainingMs:10000,deadline:performance.now()+10000,paused:false};show('timerSection');drawTimer();clearInterval(tickTimer);tickTimer=setInterval(tick,80);getWakeLock();}
+    function drawTimer(){if(!active)return;const p=active.seq[active.index], remaining=Math.max(0,active.remainingMs), secs=Math.ceil(remaining/1000), percent=Math.min(100,Math.max(0,(1-remaining/(p.secs*1000))*100));$('timerDigits').textContent=String(secs);$('timerDigits').setAttribute('aria-label',`${secs} seconds remaining`);$('timerCircle').style.setProperty('--progress',percent.toFixed(2));$('timerCircle').className=`circle ${p.type}`;$('phaseStatus').className=`status ${p.type}`;
+      $('phaseStatus').textContent=p.type==='intro'?'PREPARE':p.type==='hold'?'HOLD':'REST';$('phaseName').textContent=p.type==='intro'?'Get into position':p.type==='hold'?'Hold your stance':'Recover and reset';$('phaseHelp').textContent=p.type==='intro'?'Set your feet. Dumbbells ready. The first beep starts your hold.':p.type==='hold'?'Front arm long but not locked. Chin-side arm controlled. Keep breathing.':'Relax your arms. The next double beep starts another hold.';$('setCounter').textContent=`Set ${p.set} of ${active.settings.sets}`;
+      $('setDots').innerHTML=Array.from({length:active.settings.sets},(_,i)=>`<span class="dot ${i<active.record.completedSets?'done':(i+1===p.set?'current':'')}" aria-hidden="true"></span>`).join('');$('setDots').setAttribute('aria-label',`${active.record.completedSets} of ${active.settings.sets} holds completed`);$('pauseButton').textContent=active.paused?'▶ Resume':'Ⅱ Pause';}
+    function tick(){if(!active||active.paused)return;let now=performance.now();active.remainingMs=Math.max(0,active.deadline-now);let transitions=0;
+      while(active&&active.remainingMs<=0&&transitions++<30){const previous=active.seq[active.index];if(previous.type==='hold'){active.record.completedSets++;storeLogs();}if(active.index===active.seq.length-1){endSession('Completed');return;}active.index++;const next=active.seq[active.index];active.deadline+=next.secs*1000;active.remainingMs=Math.max(0,active.deadline-now);sound(next.type);}
+      drawTimer();}
+    function pauseSession(auto=false){if(!active||active.paused)return;active.remainingMs=Math.max(0,active.deadline-performance.now());active.paused=true;releaseWakeLock();drawTimer();if(auto){$('phaseHelp').textContent='Paused because the app went into the background. Tap Resume when you are ready.';} }
+    function resumeSession(){if(!active||!active.paused)return;initAudio();active.paused=false;active.deadline=performance.now()+active.remainingMs;drawTimer();getWakeLock();}
+    function endSession(status){if(!active)return;clearInterval(tickTimer);tickTimer=null;releaseWakeLock();const record=active.record;record.status=status;record.finishedAt=new Date().toISOString();storeLogs();$('finishEyebrow').textContent=status==='Completed'?'SESSION COMPLETE':'SESSION ENDED EARLY';$('finishHeading').textContent=status==='Completed'?'Nice steady work.':'Effort recorded.';$('finishDescription').textContent=status==='Completed'?'Your completed workout is saved in your training diary.':'Your session and the number of completed holds are saved in your training diary.';$('finishSets').textContent=`${record.completedSets} of ${record.plannedSets}`;$('finishWeight').textContent=`${record.weightKg} kg`;active=null;show('finishSection');}
+    function renderHistory(){const count=logs.length;$('historyCount').textContent=`${count} ${count===1?'session':'sessions'}`;$('historyList').innerHTML='';if(!count){$('historyList').innerHTML='<div class="empty">No sessions yet. Your first Archer Hold workout will appear here.</div>';return;}logs.forEach(log=>{const card=document.createElement('article');card.className='history-item';const date=new Date(log.startedAt);const shown=Number.isNaN(date.valueOf())?log.startedAt:new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(date);const complete=log.status==='Completed';const status=log.status==='In progress'?'Interrupted':log.status;card.innerHTML=`<div class="history-top"><span class="history-date"></span><span class="tag ${complete?'completed':'stopped'}"></span></div><div class="history-stats"></div>`;card.querySelector('.history-date').textContent=shown;card.querySelector('.tag').textContent=status;card.querySelector('.history-stats').textContent=`${log.completedSets}/${log.plannedSets} holds · ${log.holdSeconds}s hold · ${log.restSeconds}s rest · ${log.weightKg} kg per dumbbell`; $('historyList').appendChild(card);});}
+    function openHistory(){if(active)return;const current=screens.find(id=>!$(id).classList.contains('hide'));if(current!=='historySection')previousScreen=current;renderHistory();show('historySection');$('historyToggle').textContent='Back';}
+    function back(){show(previousScreen==='historySection'?'setupSection':previousScreen);$('historyToggle').textContent='History';}
+    function csvCell(x){return '"'+String(x??'').replaceAll('"','""')+'"';}
+    function asCsv(){const columns=['Date and time (local)','Status','Sets planned','Holds completed','Hold per set (seconds)','Rest per break (seconds)','Weight per dumbbell (kg)','Planned total hold (seconds)','Completed full hold time (seconds)'];const lines=[columns.map(csvCell).join(',')];for(const r of [...logs].reverse()){const date=new Date(r.startedAt),ds=Number.isNaN(date.valueOf())?r.startedAt:date.toLocaleString('en-GB');lines.push([ds,r.status==='In progress'?'Interrupted':r.status,r.plannedSets,r.completedSets,r.holdSeconds,r.restSeconds,r.weightKg,r.plannedSets*r.holdSeconds,r.completedSets*r.holdSeconds].map(csvCell).join(','));}return '\uFEFF'+lines.join('\r\n');}
+    function asText(){const out=['ARCHER HOLD — TRAINING DIARY','============================','One front-arm dumbbell hold, one chin-side dumbbell hold.','Weights are listed per dumbbell.',''];if(!logs.length)out.push('No sessions recorded.');for(const r of [...logs].reverse()){const d=new Date(r.startedAt),date=Number.isNaN(d.valueOf())?r.startedAt:d.toLocaleString('en-GB');out.push(`Date: ${date}`,`Status: ${r.status==='In progress'?'Interrupted':r.status}`,`Sets: ${r.plannedSets} planned; ${r.completedSets} completed`,`Hold: ${r.holdSeconds} seconds per set`,`Rest: ${r.restSeconds} seconds between sets`,`Dumbbells: ${r.weightKg} kg each`,`Planned holding time: ${formatSecs(r.plannedSets*r.holdSeconds)}`,`Completed full holding time: ${formatSecs(r.completedSets*r.holdSeconds)}`,'----------------------------------');}out.push('','Exported: '+new Date().toLocaleString('en-GB'));return out.join('\n');}
+    function download(name,contents,type){const blob=new Blob([contents],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);}
+    function exportLogs(type){const date=new Date().toISOString().slice(0,10);if(type==='txt')download(`Archer-Hold-Diary-${date}.txt`,asText(),'text/plain;charset=utf-8');else download(`Archer-Hold-History-${date}.csv`,asCsv(),'text/csv;charset=utf-8');}
+    function setup(){logs=getStored(keys.history,[]);if(!Array.isArray(logs))logs=[];let changed=false;for(const r of logs){if(r.status==='In progress'){r.status='Interrupted';r.finishedAt=r.finishedAt||new Date().toISOString();changed=true;}}if(changed)storeLogs();const saved=getStored(keys.settings,null);if(saved)for(const id of Object.keys(limits))if(Number.isInteger(saved[id])&&saved[id]>=limits[id][0]&&saved[id]<=limits[id][1])$(id).value=saved[id];updatePreview();document.querySelectorAll('input[type="number"]').forEach(input=>input.addEventListener('input',updatePreview));$('settingsForm').addEventListener('submit',startSession);$('testSound').addEventListener('click',()=>{initAudio();sound('hold');setTimeout(()=>sound('rest'),850);});$('pauseButton').addEventListener('click',()=>active?.paused?resumeSession():pauseSession());$('endButton').addEventListener('click',()=>{if(active&&confirm('End this session early? Your completed holds will still be saved.'))endSession('Stopped early');});$('againButton').addEventListener('click',()=>{show('setupSection');$('historyToggle').textContent='History';});$('viewHistoryButton').addEventListener('click',openHistory);$('historyToggle').addEventListener('click',()=>{if(active)return; if(!$('historySection').classList.contains('hide'))back();else openHistory();});$('backButton').addEventListener('click',back);$('exportTxt').addEventListener('click',()=>exportLogs('txt'));$('exportCsv').addEventListener('click',()=>exportLogs('csv'));$('clearHistory').addEventListener('click',()=>{if(logs.length&&confirm('Delete every saved Archer Hold session from this device? Export your diary first if you want to keep it.')){logs=[];storeLogs();renderHistory();}});window.addEventListener('pagehide',()=>{if(active)pauseSession(true);});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&active)pauseSession(true);});if(!storageAvailable)$('storageNotice').textContent='Local storage is unavailable in this browser. Export after every training session to keep a copy.';if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+    setup();
+  })();
+  </script>
+</body>
+</html>
