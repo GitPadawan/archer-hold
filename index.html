@@ -117,7 +117,7 @@
           <button class="btn btn-primary full" id="startButton" type="submit">▶ Start Archer Hold</button>
         </form>
       </div>
-      <p class="footer">Start light and stay controlled. A dumbbell held at arm's length is not equivalent to your bow's draw weight.</p>
+      <p class="footer">Archer Hold v1.1 · Start light and stay controlled. A dumbbell held at arm's length is not equivalent to your bow's draw weight.</p>
     </section>
 
     <section id="timerSection" class="hide" aria-label="Active training timer" aria-live="off">
@@ -173,7 +173,24 @@
     function readSettings() {const out={}; for (const id of Object.keys(limits)) {const n=Number($(id).value); if (!Number.isInteger(n)||n<limits[id][0]||n>limits[id][1]) throw new Error(`${id==='sets'?'Sets':id==='hold'?'Hold seconds':id==='rest'?'Rest seconds':'Weight'} must be a whole number from ${limits[id][0]} to ${limits[id][1]}.`);out[id]=n;} return out;}
     const formatSecs = seconds => {const m=Math.floor(seconds/60),s=Math.round(seconds%60);return m?`${m} min ${s} sec`:`${s} sec`;};
     function updatePreview(){try{const s=readSettings();$('validationMessage').classList.add('hide'); $('totalTime').textContent=formatSecs(10+s.sets*s.hold+(s.sets-1)*s.rest);$('totalHold').textContent=formatSecs(s.sets*s.hold);}catch (_){$('totalTime').textContent='—';$('totalHold').textContent='—';}}
-    function initAudio(){try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return; if(!audio) audio=new Context(); if(audio.state==='suspended')audio.resume().catch(()=>{});}catch (_){} }
+    function initAudio(){
+      // iOS can mute Web Audio in Silent Mode unless the session is configured
+      // for media playback. The assignment is supported on newer iOS devices.
+      try{if('audioSession' in navigator)navigator.audioSession.type='playback';}catch(_){}
+      try{
+        const Context=window.AudioContext||window.webkitAudioContext;
+        if(!Context)return;
+        if(!audio||audio.state==='closed')audio=new Context();
+        // Prime the audio output synchronously inside the user's button tap.
+        // Some versions of iOS require this even if resume() succeeds.
+        const buffer=audio.createBuffer(1,1,22050);
+        const source=audio.createBufferSource();
+        source.buffer=buffer;
+        source.connect(audio.destination);
+        source.start(0);
+        if(audio.state!=='running')audio.resume().catch(()=>{});
+      }catch(_){}
+    }
     function tone(frequency,duration,delay=0){if(!audio)return;try{const start=audio.currentTime+delay;const osc=audio.createOscillator(), gain=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.28,start+.018);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);osc.connect(gain);gain.connect(audio.destination);osc.start(start);osc.stop(start+duration+.03);}catch (_){} }
     function sound(kind){if(kind==='hold'){tone(850,.26);tone(1050,.29,.36);}else if(kind==='rest'){tone(490,.44);}else if(kind==='done'){tone(660,.16);tone(830,.16,.21);tone(1100,.42,.44);}else{tone(750,.16);tone(980,.16,.25);}}
     async function getWakeLock(){if(!('wakeLock' in navigator)||!navigator.wakeLock)return;try{wakeLock=await navigator.wakeLock.request('screen');}catch (_){} }
@@ -187,7 +204,7 @@
       $('phaseStatus').textContent=p.type==='intro'?'PREPARE':p.type==='hold'?'HOLD':'REST';$('phaseName').textContent=p.type==='intro'?'Get into position':p.type==='hold'?'Hold your stance':'Recover and reset';$('phaseHelp').textContent=p.type==='intro'?'Set your feet. Dumbbells ready. The first beep starts your hold.':p.type==='hold'?'Front arm long but not locked. Chin-side arm controlled. Keep breathing.':'Relax your arms. The next double beep starts another hold.';$('setCounter').textContent=`Set ${p.set} of ${active.settings.sets}`;
       $('setDots').innerHTML=Array.from({length:active.settings.sets},(_,i)=>`<span class="dot ${i<active.record.completedSets?'done':(i+1===p.set?'current':'')}" aria-hidden="true"></span>`).join('');$('setDots').setAttribute('aria-label',`${active.record.completedSets} of ${active.settings.sets} holds completed`);$('pauseButton').textContent=active.paused?'▶ Resume':'Ⅱ Pause';}
     function tick(){if(!active||active.paused)return;let now=performance.now();active.remainingMs=Math.max(0,active.deadline-now);let transitions=0;
-      while(active&&active.remainingMs<=0&&transitions++<30){const previous=active.seq[active.index];if(previous.type==='hold'){active.record.completedSets++;storeLogs();}if(active.index===active.seq.length-1){endSession('Completed');return;}active.index++;const next=active.seq[active.index];active.deadline+=next.secs*1000;active.remainingMs=Math.max(0,active.deadline-now);sound(next.type);}
+      while(active&&active.remainingMs<=0&&transitions++<30){const previous=active.seq[active.index];if(previous.type==='hold'){active.record.completedSets++;storeLogs();}if(active.index===active.seq.length-1){sound('done');endSession('Completed');return;}active.index++;const next=active.seq[active.index];active.deadline+=next.secs*1000;active.remainingMs=Math.max(0,active.deadline-now);sound(next.type);}
       drawTimer();}
     function pauseSession(auto=false){if(!active||active.paused)return;active.remainingMs=Math.max(0,active.deadline-performance.now());active.paused=true;releaseWakeLock();drawTimer();if(auto){$('phaseHelp').textContent='Paused because the app went into the background. Tap Resume when you are ready.';} }
     function resumeSession(){if(!active||!active.paused)return;initAudio();active.paused=false;active.deadline=performance.now()+active.remainingMs;drawTimer();getWakeLock();}

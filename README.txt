@@ -49,3 +49,67 @@ IMPORTANT LIMITATIONS
 
 All functionality runs locally in JavaScript. No accounts, ads, analytics,
 external APIs or online database are included.
+
+EXACT GITHUB PAGES INSTALLATION (MAC / PC)
+=========================================
+1. Download the ZIP and double-click it to unzip. Open the 'archer-hold' folder.
+2. Sign in at https://github.com (a free account is fine).
+3. Click + (upper-right) > New repository. Name: archer-hold.
+   Choose Public, then click Create repository.
+4. Click 'uploading an existing file' in the empty repo, or
+   Add file > Upload files if that button is displayed.
+5. Select the files INSIDE the unzipped archer-hold folder and drag them to
+   the upload page: index.html, sw.js, manifest.webmanifest, icon-192.png,
+   icon-512.png (README.txt optional). Do not upload the ZIP or the outer
+   folder. index.html must appear at the repository's top level.
+6. Select 'Commit directly to the main branch' if shown, then Commit changes.
+7. Click Settings in the repository > Pages in the left sidebar.
+8. Under Build and deployment, set Source: Deploy from a branch.
+   Select branch main and folder /(root), then click Save.
+9. Once published, return to Settings > Pages and choose Visit site.
+   Your website should be https://YOUR-USERNAME.github.io/archer-hold/
+   (replace YOUR-USERNAME with the GitHub account username).
+
+ON IPHONE
+=========
+10. Open the published URL in Safari (not the GitHub code page).
+11. Open Share > Add to Home Screen, switch on Open as Web App if shown,
+    and tap Add.
+12. Open Archer Hold from your Home Screen once while online, then
+    press Test beeps. Keep the screen active during workouts.
+13. To review or back up workouts, tap History > Export diary (.txt)
+    or Export CSV. History is stored on your iPhone, not GitHub.
+
+IF IT DOESN'T OPEN
+=================
+- If it shows 404, check GitHub Settings > Pages for publication status.
+- Check that index.html is at the TOP LEVEL, not in a folder inside the repo.
+- Check Pages is set to main / (root), not None.
+- This is a public website; only the app code is uploaded, not your diary.
+
+AUDIO PATCH v1.1 (2026-11-12)
+=============================
+CHANGES
+- Requests an iOS media playback audio session, which can allow Web Audio
+  beeps even when the iPhone is in Silent Mode (supported iOS versions).
+- Primes Web Audio on a direct tap for better iPhone compatibility.
+- Fixes the completion beep not being played at the end of the final set.
+- Changes the service worker cache identifier from v1 to v2, so existing
+  installed Archer Hold apps can retrieve the updated app.
+
+UPDATE AN EXISTING GITHUB PAGES INSTALLATION
+1. Open your GitHub repository (GitPadawan/archer-hold) on your computer.
+2. Add file > Upload files. Upload ONLY these two replacement files from
+   this audio-fix folder: index.html and sw.js. Commit the changes to main.
+3. In iPhone Safari, open https://gitpadawan.github.io/archer-hold/ while
+   connected to the internet; close and reopen Archer Hold from its Home
+   Screen icon. The updated setup screen says 'Archer Hold v1.1' at bottom.
+4. Press Test beeps and keep the phone screen on. If it remains silent,
+   temporarily turn off Silent Mode and increase media volume.
+
+IMPORTANT: These are only client-side files. No settings or history keys were
+changed, so your existing training history should remain. Do not delete the
+Home Screen app or clear its website data to update, as that can erase logs.
+
+Some iOS versions still have Web Audio bugs that cannot be fully fixed by
+website code.
