@@ -113,3 +113,18 @@ Home Screen app or clear its website data to update, as that can erase logs.
 
 Some iOS versions still have Web Audio bugs that cannot be fully fixed by
 website code.
+
+
+Archer Hold v1.2 — triple completion beep
+----------------------------------------
+When the final hold finishes, Archer Hold plays THREE clearly spaced beeps.
+The regular double-beep start and single rest cue are unchanged.
+On the setup screen, tap “Test finish” to preview the three beeps.
+
+Updating an existing GitHub Pages installation:
+1. In your repository, replace index.html and sw.js with the two v1.2 files.
+2. Commit the changes to the main branch.
+3. After GitHub Pages finishes publishing, open your Archer Hold website in Safari.
+4. Close and reopen the Home Screen app (sometimes twice after a service-worker update).
+5. Check that the setup footer reads Archer Hold v1.2.
+Your saved training history is retained; do not delete the existing Home Screen app.
